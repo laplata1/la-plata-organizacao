@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LA PLATA | GESTÃO</title>
+<style>
+:root{color-scheme:dark;--bg:#070b12;--panel:#111722;--line:#2c3546;--txt:#f3f5fa;--muted:#a6b0c2;--accent:#d8dde6;--red:#e33459;--green:#5cc8a0}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+button,input,select{font:inherit}button{cursor:pointer;background:#263248;border:1px solid #3b4a62;border-radius:9px;color:#fff;padding:10px 14px;font-weight:650}button:hover{filter:brightness(1.18)}button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--red);border-color:var(--red)}button.danger{background:#502337;border-color:#763048}button.good{background:#174c42;border-color:#34745e}
+input,select{width:100%;padding:11px;background:#090d15;color:#fff;border:1px solid #354156;border-radius:8px}label{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px}
+h1,h2,h3,p{margin-top:0}h1{font-size:24px}h2{font-size:20px}h3{font-size:16px}.muted{color:var(--muted)}small{color:var(--muted)}
+#auth{min-height:100vh;background:#020305 url('/la-plata.png') no-repeat center top;background-size:min(100%,1536px) auto;padding:clamp(320px,49vw,690px) 15px 45px;display:flex;justify-content:center;align-items:flex-start}
+.authpanel{width:min(100%,292px);background:#0b1019ed;border:1px solid #677184;border-radius:18px;padding:18px;box-shadow:0 25px 70px #0009}
+.brand{text-align:center;font-size:16px;font-weight:800;letter-spacing:1px}.brand small{display:block;font-size:10px;font-weight:400;margin:5px 0 14px;letter-spacing:0}
+.tabs{display:flex;gap:8px}.tabs button{flex:1;font-size:12px;padding:9px}.tabs button.on{background:#555}
+.authpanel h2{font-size:15px;margin:16px 0 5px}.authpanel input{font-size:13px;padding:9px}.authpanel .primary{width:100%;margin-top:16px}
+#authMsg{font-size:12px;line-height:1.5;margin-top:12px}.clock{border-top:1px solid var(--line);margin-top:14px;padding-top:12px;display:flex;justify-content:space-between;text-align:center;font-size:11px}.clock strong{display:block;font-size:13px}
+.hidden{display:none!important}
+header{padding:18px 25px;border-bottom:1px solid var(--line);background:#0b1019;display:flex;justify-content:space-between;gap:12px;align-items:center}
+header strong{font-size:20px;letter-spacing:1px}
+.layout{display:flex;min-height:calc(100vh - 74px)}aside{width:230px;flex-shrink:0;background:#0d131e;border-right:1px solid var(--line);padding:20px 12px}aside button{width:100%;text-align:left;margin:4px 0;background:transparent;border-color:transparent}aside button.active{background:#263248;border-color:#3a4860}
+main{flex:1;min-width:0;padding:26px;max-width:1400px;margin:auto}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:19px;margin:0 0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:14px}.stat{font-size:30px;font-weight:800}.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.space{justify-content:space-between}.formrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-items:end}.formrow label{margin-top:0}
+table{width:100%;border-collapse:collapse;min-width:620px}th,td{text-align:left;padding:12px 9px;border-bottom:1px solid #2c3546;font-size:13px}th{color:var(--muted);font-weight:600}td button{padding:6px 8px;font-size:12px;margin:2px}.tablewrap{overflow:auto}.pill{border-radius:30px;padding:5px 9px;background:#263248;font-size:11px;white-space:nowrap}.ok{color:var(--green)}.pending{color:#f2c76b}.bad{color:#ff859a}
+#toast{position:fixed;bottom:16px;right:16px;max-width:340px;background:#222f40;padding:15px 18px;border:1px solid #60708b;border-radius:12px;z-index:10;display:none}
+@media(max-width:750px){#auth{background-size:100% auto;padding-top:clamp(230px,74vw,560px)}.layout{display:block}aside{width:auto;display:flex;overflow-x:auto;padding:8px}aside button{width:auto;white-space:nowrap}main{padding:15px}header{padding:13px}}
+</style></head><body>
+<section id="auth">
+ <div class="authpanel">
+  <div class="brand">♛ LA PLATA | GESTÃO<small>Estoque, produção, membros e baús</small></div>
+  <div class="tabs"><button id="tLogin" class="on" onclick="mode('login')">Entrar</button><button id="tRegister" onclick="mode('register')">Criar conta</button></div>
+  <div id="loginBox"><h2>Acessar painel</h2><label>Login<input id="loginName" autocomplete="username" placeholder="Seu usuário"></label><label>Senha<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Sua senha"></label><button class="primary" onclick="login()">Entrar</button></div>
+  <div id="registerBox" class="hidden"><h2>Cadastro de membro</h2><label>Nome<input id="regName" placeholder="Seu nome" maxlength="80"></label><label>Criar login<input id="regLogin" placeholder="Login" maxlength="40"></label><label>Senha<input id="regPassword" type="password" placeholder="Mínimo 8 caracteres"></label><label>Confirmar senha<input id="regConfirm" type="password"></label><button class="primary" onclick="register()">Enviar para aprovação</button></div>
+  <p id="authMsg" class="muted">Novos cadastros precisam de aprovação do administrador.</p>
+  <div class="clock"><div>Entradas neste navegador<strong id="visits">0</strong></div><div>Hora atual • Brasília<strong id="time">--:--:--</strong></div></div>
+ </div>
+</section>
+<section id="app" class="hidden">
+<header><strong>♛ LA PLATA | GESTÃO</strong><div class="flex"><small id="identity"></small><button onclick="logout()">Sair</button></div></header>
+<div class="layout"><aside id="nav"></aside><main><div id="content"></div></main></div>
+</section>
+<div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const FARM=['Dinheiro sujo','Ópio','Folha','Seringa','Agulha','Capofol'];
+const STOCK=['Capofol','App Piston','Calibre 12','G36','M16','C4'];
+const ROLES=['Administrador','Gerente de Farm','Gerente de Vendas','Líder','Sub Líder','Membro'];
+let me=null,tab='',data={};
+const admin=()=>me?.role==='Administrador',manager=()=>me?.role!=='Membro';
+function toast(s){$('toast').textContent=s;$('toast').style.display='block';setTimeout(()=>$('toast').style.display='none',4500)}
+async function api(path,options={}){
+ let r;
+ try{r=await fetch('/api/'+path,{credentials:'same-origin',headers:{'Content-Type':'application/json'},...options})}
+ catch{throw Error('Não foi possível conectar ao servidor.')}
+ const type=r.headers.get('content-type')||'';
+ if(!type.includes('application/json'))throw Error('API indisponível. Confira a implantação e as funções da Vercel.');
+ const d=await r.json();if(!r.ok)throw Error(d.error||'Erro na solicitação');return d;
+}
+const post=(path,obj)=>api(path,{method:'POST',body:JSON.stringify(obj)});
+function mode(m){$('loginBox').classList.toggle('hidden',m!=='login');$('registerBox').classList.toggle('hidden',m!=='register');$('tLogin').classList.toggle('on',m==='login');$('tRegister').classList.toggle('on',m==='register');$('authMsg').textContent='Novos cadastros precisam de aprovação do administrador.'}
+async function register(){try{
+ if($('regPassword').value!==$('regConfirm').value)throw Error('As senhas não coincidem.');
+ const d=await post('register',{name:$('regName').value,login:$('regLogin').value,password:$('regPassword').value});
+ mode('login');$('authMsg').textContent=d.message;$('regPassword').value='';$('regConfirm').value='';
+ }catch(e){$('authMsg').textContent=e.message}}
+async function login(){try{
+ const d=await post('login',{login:$('loginName').value,password:$('loginPassword').value});
+ me=d.user;start();
+ }catch(e){$('authMsg').textContent=e.message}}
+async function logout(){try{await post('logout',{})}catch{}me=null;$('app').classList.add('hidden');$('auth').classList.remove('hidden');$('loginPassword').value=''}
+function start(){
+ $('auth').classList.add('hidden');$('app').classList.remove('hidden');
+ $('identity').textContent=me.name+' • '+me.role;
+ const sections=manager()?[['dashboard','Painel'],['lockers','Baús'],['farm','Aprovação de farm'],['stock','Estoque geral'],['users','Membros e permissões'],['history','Histórico']]:[['lockers','Meu Baú']];
+ $('nav').innerHTML=sections.map(([id,name])=>`<button id="nav_${id}" onclick="openTab('${id}')">${name}</button>`).join('');
+ openTab(manager()?'dashboard':'lockers');
+}
+async function openTab(t){
+ tab=t;document.querySelectorAll('aside button').forEach(b=>b.classList.toggle('active',b.id==='nav_'+t));
+ $('content').innerHTML='<div class="panel">Carregando...</div>';
+ try{
+ if(t==='dashboard')data=await api('overview');
+ if(t==='lockers')data=manager()?await api('users'):await api('farm');
+ if(t==='farm')data=await api('farm');
+ if(t==='stock')data=await api('stock');
+ if(t==='users')data=await api('users');
+ if(t==='history')data=await api('history');
+ render();
+ }catch(e){$('content').innerHTML=`<div class="panel bad">${esc(e.message)}</div>`}
+}
+const status=s=>`<span class="${s==='Aprovado'?'ok':s==='Pendente'?'pending':'bad'}">${esc(s)}</span>`;
+const date=s=>s?new Date(s).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—';
+const table=(heads,rows)=>`<div class="tablewrap"><table><thead><tr>${heads.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${heads.length}" class="muted">Nenhum registro.</td></tr>`}</tbody></table></div>`;
+function render(){
+ let s='';
+ if(tab==='dashboard'){
+  s=`<h1>Painel de gestão</h1><div class="grid">
+   <div class="panel"><div class="muted">Cadastros pendentes</div><div class="stat">${data.pendingMembers}</div></div>
+   <div class="panel"><div class="muted">Farm pendente</div><div class="stat">${data.pendingFarm}</div></div>
+   <div class="panel"><div class="muted">Estoque pendente</div><div class="stat">${data.pendingStock}</div></div></div>
+   <div class="panel"><h3>LA PLATA</h3><p class="muted">Sistema de inventário fictício de RP. Todas as aprovações e saldos são registrados no servidor.</p></div>`;
+ }
+ if(tab==='lockers'){
+  if(!manager()){
+   s=`<h1>Meu Baú ${me.locker?'— '+String(me.locker).padStart(2,'0'):'— aguardando atribuição'}</h1>`;
+   if(!me.locker)s+='<div class="panel pending">Seu cadastro foi aprovado. Aguarde o administrador atribuir um baú.</div>';
+   else s+=`<div class="panel"><h3>Lançar farm manualmente</h3><div class="formrow"><label>Item<select id="farmItem">${FARM.map(x=>`<option>${x}</option>`).join('')}</select></label><label>Quantidade<input id="farmQty" type="number" min="1" step="1" placeholder="Quantidade"></label><button class="primary" onclick="sendFarm()">Enviar para aprovação</button></div></div>`;
+   s+=`<div class="panel"><h3>Meus lançamentos</h3>${table(['Item','Quantidade','Status','Data'],(data.farm||[]).map(x=>`<tr><td>${esc(x.item)}</td><td>${x.qty}</td><td>${status(x.status)}</td><td>${date(x.created_at)}</td></tr>`))}</div>`;
+  }else{
+   s=`<h1>Baús individuais</h1><div class="panel"><p class="muted">Um baú por membro. Atribuição exclusiva pelo administrador.</p>${table(['Membro','Login','Baú','Status'],(data.users||[]).filter(x=>x.role==='Membro').map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.login)}</td><td>${x.locker?'Baú '+String(x.locker).padStart(2,'0'):'Não atribuído'}</td><td>${status(x.status)}</td></tr>`))}</div>`;
+  }
+ }
+ if(tab==='farm'){
+  s=`<h1>Aprovação de farm</h1><div class="panel">${table(['Membro','Item','Qtd.','Status','Data','Ações'],(data.farm||[]).map(x=>`<tr><td>${esc(x.member_name)}</td><td>${esc(x.item)}</td><td>${x.qty}</td><td>${status(x.status)}</td><td>${date(x.created_at)}</td><td>${x.status==='Pendente'?`<button class="good" onclick="review('review-farm',${x.id},true)">Aprovar</button><button class="danger" onclick="review('review-farm',${x.id},false)">Rejeitar</button>`:'—'}</td></tr>`))}</div>`;
+ }
+ if(tab==='stock'){
+  s=`<h1>Estoque geral</h1><div class="panel"><p class="muted">Toda entrada ou retirada precisa ser aprovada por outro responsável. Não é possível aprovar a própria solicitação.</p>
+  <div class="formrow"><label>Item<select id="stockItem">${STOCK.map(x=>`<option>${x}</option>`).join('')}</select></label><label>Movimentação<select id="stockKind"><option>Entrada</option><option>Retirada</option></select></label><label>Quantidade<input id="stockQty" type="number" min="1" step="1"></label><button class="primary" onclick="sendStock()">Solicitar movimentação</button></div></div>
+  <div class="panel"><h3>Saldos</h3>${table(['Item','Saldo atual'],(data.stock||[]).map(x=>`<tr><td>${esc(x.item)}</td><td>${x.qty} un</td></tr>`))}</div>
+  <div class="panel"><h3>Solicitações de estoque</h3>${table(['Solicitante','Item','Movimento','Status','Data','Ações'],(data.requests||[]).map(x=>`<tr><td>${esc(x.requester)}</td><td>${esc(x.item)}</td><td>${Number(x.delta)>0?'+':''}${x.delta}</td><td>${status(x.status)}</td><td>${date(x.created_at)}</td><td>${x.status==='Pendente'?`<button class="good" onclick="review('review-stock',${x.id},true)">Aprovar</button><button class="danger" onclick="review('review-stock',${x.id},false)">Rejeitar</button>`:'—'}</td></tr>`))}</div>`;
+ }
+ if(tab==='users'){
+  s=`<h1>Membros e permissões</h1>`;
+  if(admin())s+=`<div class="panel"><h3>Cadastrar usuário manualmente</h3><div class="formrow"><label>Nome<input id="newName"></label><label>Login<input id="newLogin"></label><label>Senha<input id="newPass" type="password"></label><label>Perfil<select id="newRole">${ROLES.map(x=>`<option>${x}</option>`).join('')}</select></label><button class="primary" onclick="createUser()">Adicionar</button></div></div>`;
+  s+=`<div class="panel"><h3>Cadastros ${admin()?'— aprovar, editar ou excluir':''}</h3>${table(['Nome','Login','Perfil','Baú','Status','Ações'],(data.users||[]).map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.login)}</td><td>${esc(x.role)}</td><td>${x.locker?'Baú '+String(x.locker).padStart(2,'0'):'—'}</td><td>${status(x.status)}</td><td>${admin()?`<div class="flex">${x.status==='Pendente'?`<button class="good" onclick="review('review-user',${x.id},true)">Aprovar</button><button class="danger" onclick="review('review-user',${x.id},false)">Rejeitar</button>`:''}<button onclick="editUser(${x.id})">Editar</button>${x.role==='Membro'?`<button onclick="assign(${x.id})">Atribuir baú</button>`:''}${x.id!==me.id?`<button class="danger" onclick="removeUser(${x.id})">Excluir</button>`:''}</div>`:'—'}</td></tr>`))}</div>`;
+ }
+ if(tab==='history')s=`<h1>Histórico</h1><div class="panel">${table(['Responsável','Ação','Detalhe','Data'],(data.history||[]).map(x=>`<tr><td>${esc(x.actor_name)}</td><td>${esc(x.action)}</td><td>${esc(x.detail)}</td><td>${date(x.created_at)}</td></tr>`))}</div>`;
+ $('content').innerHTML=s;
+}
+async function act(fn){try{await fn();toast('Operação realizada.');await openTab(tab)}catch(e){toast(e.message)}}
+function sendFarm(){act(()=>post('farm',{item:$('farmItem').value,qty:Number($('farmQty').value)}))}
+function sendStock(){act(()=>post('stock',{item:$('stockItem').value,kind:$('stockKind').value,qty:Number($('stockQty').value)}))}
+function review(route,id,approve){if(!confirm(approve?'Confirmar aprovação?':'Confirmar rejeição?'))return;act(()=>post(route,{id,approve}))}
+function createUser(){act(()=>post('users',{name:$('newName').value,login:$('newLogin').value,password:$('newPass').value,role:$('newRole').value}))}
+function findUser(id){return data.users?.find(x=>Number(x.id)===Number(id))}
+function assign(id){const u=findUser(id);if(!u)return;const s=prompt('Número do baú (1 a 999). Deixe vazio para remover:',u.locker??'');if(s===null)return;act(()=>post('assign-locker',{id,locker:s.trim()===''?null:Number(s)}))}
+function editUser(id){
+ const u=findUser(id);if(!u)return;
+ const name=prompt('Nome:',u.name);if(name===null)return;
+ const login=prompt('Login:',u.login);if(login===null)return;
+ const role=prompt('Perfil: '+ROLES.join(' | '),u.role);if(role===null)return;
+ const password=prompt('Nova senha (deixe vazio para manter):','');if(password===null)return;
+ const active=confirm('Manter usuário ativo? OK = ativo / Cancelar = inativo');
+ act(()=>post('user-update',{id,name,login,role,active,...(password?{password}:{})}));
+}
+function removeUser(id){if(!confirm('Excluir usuário? O histórico será preservado.'))return;act(()=>post('user-delete',{id}))}
+(function(){
+ try{let n=Number(localStorage.getItem('lp_visits')||0)+1;localStorage.setItem('lp_visits',String(n));$('visits').textContent=n}catch{$('visits').textContent='—'}
+ const fmt=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+ const tick=()=>$('time').textContent=fmt.format(new Date());tick();setInterval(tick,1000);
+ api('me').then(d=>{me=d.user;start()}).catch(()=>{});
+})();
+</script></body></html>
